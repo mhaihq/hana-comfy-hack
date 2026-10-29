@@ -76,7 +76,7 @@ export function Higgsy({ viseme, open, blink, reaction, listening, thinking = fa
       setHopShown(true);
       return;
     }
-    const t = setTimeout(() => setHopShown(false), 240);
+    const t = setTimeout(() => setHopShown(false), 120);
     return () => clearTimeout(t);
   }, [hop]);
 
