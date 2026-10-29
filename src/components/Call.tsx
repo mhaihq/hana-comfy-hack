@@ -9,6 +9,9 @@ import { Higgsy, type Reaction } from "./Higgsy";
 type Line = { role: "user" | "agent"; text: string };
 type Demo = { state: "loading" | "done" | "error"; prompt: string; image?: string; error?: string };
 
+// Where the demo image's workflow lives in the repo, so anyone can open it in ComfyUI.
+const WORKFLOW_URL = "https://github.com/mhaihq/hana-comfy-hack/blob/main/workflows/demo-image.api.json";
+
 const REACTIONS = ["nod", "smile", "browRaise", "shake", "celebrate"] as const;
 // The only pages the agent can show. Fixed here so it can never put a link of its own on screen.
 const LINKS = {
@@ -206,7 +209,12 @@ export function Call({ onEnd }: { onEnd: () => void }) {
               <figure>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={demo.image} alt={demo.prompt} />
-                <figcaption>{demo.prompt}</figcaption>
+                <figcaption>
+                  {demo.prompt}
+                  <br />
+                  <a href={WORKFLOW_URL} target="_blank" rel="noreferrer">Made with this ComfyUI workflow</a>
+                  {" · Z-Image-Turbo"}
+                </figcaption>
               </figure>
             )}
           </section>

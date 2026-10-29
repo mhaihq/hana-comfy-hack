@@ -13,9 +13,12 @@ Made for the Comfy "Open Source Higgsfield" build night. **Unofficial community 
 | What | Workflow | Where it runs |
 | --- | --- | --- |
 | Higgsy's art | [`workflows/nib-character.api.json`](workflows/nib-character.api.json) (Z-Image-Turbo) | Comfy Cloud |
+| Intro clip on the home screen | [`workflows/intro-video.ltx2_3_i2v.md`](workflows/intro-video.ltx2_3_i2v.md) (LTX-2.3 image to video, stock template) | Comfy Cloud |
 | Live demo image during a call | [`workflows/demo-image.api.json`](workflows/demo-image.api.json) (same model, 768px) | Comfy Cloud, or your own ComfyUI via `COMFY_URL` |
 
 Models for a local ComfyUI: `z_image_turbo_bf16.safetensors` (diffusion models), `qwen_3_4b.safetensors` (text encoders), `ae.safetensors` (VAE). Or open the `image_z_image_turbo` template in ComfyUI.
+
+Each demo image in the call has a "Made with this ComfyUI workflow" link to its workflow file, and the home screen clip links to its recipe.
 
 The mouth shapes, eyelids and brows are drawn over the generated image in SVG ([`src/components/Higgsy.tsx`](src/components/Higgsy.tsx)). The mouth on the original render was painted out so the overlay can move it.
 
