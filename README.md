@@ -5,6 +5,7 @@ Video-call a small animated guide who helps you pick the right [Higgsfield](http
 Made for the Comfy "Open Source Higgsfield" build night. **Unofficial community project. Not affiliated with Higgsfield.**
 
 - **Voice call** with an animated character (ElevenLabs voice agent, lip sync from the speech timings).
+- **Ask it anything about Higgsfield.** A `lookup` tool searches an index of Higgsfield's own public pages (help center, blog, product pages), so Higgsy can explain Soul ID, cancelling, credits, who owns your generations, the API and more, and name the page it used.
 - **It never invents prices.** Higgsy only knows what's written in [`knowledge/`](knowledge): plan prices from Higgsfield's own pricing page and the official model catalog, each file dated and sourced. Anything else gets "I don't have that, check the pricing page", with the official page on screen.
 - **Built with ComfyUI.** The character was generated with Z-Image-Turbo (open weights) on Comfy Cloud. During a call, Higgsy can run a real ComfyUI workflow and show you what a prompt looks like.
 
@@ -30,6 +31,7 @@ You need Node 20+, an [ElevenLabs](https://elevenlabs.io) key, and (for demos) a
 npm install
 cp .env.example .env.local      # add ELEVENLABS_API_KEY (and COMFY_API_KEY or COMFY_URL)
 npm run agent:deploy            # creates the voice agent in your ElevenLabs account, saves its id
+npm run index                   # builds the lookup index (about 2 minutes)
 npm run dev                     # http://localhost:3000
 ```
 
@@ -42,6 +44,12 @@ npm run agent:test
 ```
 
 Asks Higgsy trap questions through ElevenLabs' conversation simulator: a plan that doesn't exist, an unlisted credit cost, an unannounced model, a discount code, and a figure that should be answered (and calculated) from the notes. All 7 pass at the time of writing.
+
+## How "ask anything" stays honest
+
+`npm run build` runs `scripts/build-index.mjs` first. It reads Higgsfield's sitemaps (English pages only, honouring their `robots.txt`, 4 requests at a time, identifying itself) and turns about 500 pages into 6,000 searchable passages in `data/index.json`. That file is **not committed**: it's rebuilt on every build, so a redeploy refreshes it. `/api/lookup` ranks passages with BM25 and returns them with their source URL and date. Higgsy's prompt only lets it state facts from `knowledge/` or from those results, and to say "I couldn't find that" otherwise. If the crawl fails, the build continues with just the notes in `knowledge/`.
+
+Set `PUBLIC_URL` to your deployed site before `npm run agent:deploy`, so the agent's lookup tool calls your own `/api/lookup`.
 
 ## Keeping the knowledge current
 

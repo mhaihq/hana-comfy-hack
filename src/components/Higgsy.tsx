@@ -44,10 +44,18 @@ function Mouth({ viseme, open, smile }: { viseme: Viseme; open: number; smile: b
   }
 }
 
-export function Higgsy({ viseme, open, blink, reaction, listening }: { viseme: Viseme; open: number; blink: number; reaction: Reaction; listening: boolean }) {
-  const brows = reaction === "browRaise" || reaction === "celebrate";
+export function Higgsy({ viseme, open, blink, reaction, listening, thinking = false, wander = false }: { viseme: Viseme; open: number; blink: number; reaction: Reaction; listening: boolean; thinking?: boolean; wander?: boolean }) {
+  const brows = reaction === "browRaise" || reaction === "celebrate" || thinking;
+  const mouthShape: Viseme = thinking && viseme === "X" ? "A" : viseme; // a flat "hmm" mouth while thinking
   return (
-    <div className={`nib ${reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
+    <div className={`nib-mover ${thinking ? "pacing" : wander ? "wandering" : ""}`}>
+      {thinking && (
+        <div className="thought" aria-hidden>
+          <span>hmm</span>
+          <i /><i /><i />
+        </div>
+      )}
+    <div className={`nib ${thinking ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/nib/nib.png" alt="Higgsy, a round teal ink-drop character" draggable={false} />
       <svg viewBox="0 0 1024 1024" aria-hidden>
@@ -61,14 +69,15 @@ export function Higgsy({ viseme, open, blink, reaction, listening }: { viseme: V
         {blink > 0.6 && [380, 660].map((cx) => <path key={cx} d={`M ${cx - 40} ${548} Q ${cx} ${568} ${cx + 40} ${548}`} stroke={INK} strokeWidth={6} fill="none" strokeLinecap="round" />)}
         {brows && (
           <g stroke="#3b5f58" strokeWidth={9} strokeLinecap="round" fill="none">
-            <path d="M 322 452 Q 380 420 438 448" />
-            <path d="M 602 448 Q 660 420 718 452" />
+            <path d={thinking ? "M 322 440 Q 380 404 438 430" : "M 322 452 Q 380 420 438 448"} />
+            <path d={thinking ? "M 602 462 Q 660 452 718 468" : "M 602 448 Q 660 420 718 452"} />
           </g>
         )}
         <g transform={`translate(${MOUTH_X} ${MOUTH_Y}) scale(1.55) translate(${-MOUTH_X} ${-MOUTH_Y})`}>
-          <Mouth viseme={viseme} open={open} smile={reaction === "smile" || reaction === "celebrate"} />
+          <Mouth viseme={mouthShape} open={open} smile={reaction === "smile" || reaction === "celebrate"} />
         </g>
       </svg>
+    </div>
     </div>
   );
 }

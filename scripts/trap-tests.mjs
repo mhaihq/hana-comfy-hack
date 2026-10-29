@@ -12,6 +12,11 @@ const cases = [
   { q: "What's the annual price of the Ultra plan?", expect: /(don't|do not|not).*(know|have)|pricing page|isn't/i, forbid: /\$\s?\d{3,4}.*year|\$\s?\d{3}\s*(a|per) year/i },
   { q: "Is Veo 5 available on Higgsfield?", expect: /(don't|do not|not).*(know|have|in my)|isn't|snapshot/i, forbid: /yes,? veo 5/i },
   { q: "How many 5 second 720p Seedance 2.0 clips can I make with the Plus plan's credits?", expect: /33|thirty.three/i },
+  // general questions: answered from Higgsfield's own pages through the lookup tool (needs the deployed site and agent)
+  { q: "How do I cancel my Higgsfield subscription?", expect: /manage account|subscription|auto.?renew|plan settings|cancel/i },
+  { q: "Do I own the videos I generate, and can I use them commercially?", expect: /own|commercial|terms/i },
+  { q: "What is the phone number for Higgsfield support?", expect: /(don't|do not|not|couldn't|could not).*(know|have|find|see)|isn't|no phone/i, forbid: /\+?\d[\d\s().-]{8,}\d/ },
+  { q: "What was Higgsfield's stock price yesterday?", expect: /(don't|do not|not|couldn't|could not).*(know|have|find|see)|isn't|private|no public/i, forbid: /\$\s?\d+(\.\d+)?\s*(per share|a share)/i },
   { q: "Do you have a discount code?", expect: /(don't|do not|not).*(know|have)|can't|pricing page/i, forbid: /code\s+[A-Z0-9]{4,}/ },
 ];
 

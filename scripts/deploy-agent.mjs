@@ -23,7 +23,24 @@ const clientTool = (name, description, properties, required) => ({
   expects_response: false,
   parameters: { type: "object", properties, required },
 });
+// Server tool: Higgsy searches the index behind /api/lookup on your deployed site (see scripts/build-index.mjs).
+const publicUrl = (process.env.PUBLIC_URL || "https://hana-comfy-hack.vercel.app").replace(/\/$/, "");
+const lookupTool = {
+  type: "webhook",
+  name: "lookup",
+  description: "Search Higgsfield's own public pages (help center, blog, product pages) for passages that answer a question about Higgsfield. Returns passages with their source and date. Say a short filler line like 'Hmm, let me check' before calling.",
+  api_schema: {
+    url: `${publicUrl}/api/lookup`,
+    method: "GET",
+    query_params_schema: {
+      properties: { q: { type: "string", description: "A short search query in plain words, like 'cancel subscription' or 'Soul ID how many photos'" } },
+      required: ["q"],
+    },
+  },
+  response_timeout_secs: 10,
+};
 const tools = [
+  lookupTool,
   clientTool("react", "Trigger a facial reaction on the animated character. Call silently, about once per turn. Never mention it.", {
     name: { type: "string", enum: ["nod", "smile", "browRaise", "shake", "celebrate"], description: "The reaction" },
   }, ["name"]),

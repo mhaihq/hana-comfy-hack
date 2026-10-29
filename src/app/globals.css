@@ -41,7 +41,19 @@ a { color: var(--teal-dark); }
 .controls button:disabled { opacity: 0.5; cursor: default; }
 
 /* Higgsy */
-.nib { position: relative; width: min(440px, 80vw); aspect-ratio: 1; transform-origin: 50% 90%; animation: breathe 3.6s ease-in-out infinite; }
+.nib-mover { position: relative; display: grid; place-items: center; width: min(440px, 80vw); }
+.nib-mover .nib { width: 100%; }
+.nib-mover.pacing { animation: pace 4.2s ease-in-out infinite; }
+.nib-mover.wandering { animation: wander 2.8s ease-in-out 1; }
+.nib-thinking { animation: step 0.7s ease-in-out infinite; }
+.thought { position: absolute; top: -2%; right: 4%; z-index: 2; background: #fffaf0; border: 2px solid var(--line); border-radius: 22px; padding: 6px 14px; font-weight: 800; font-size: 17px; color: #4a5b59; display: flex; align-items: baseline; gap: 3px; box-shadow: 0 4px 0 var(--line); }
+.thought i { width: 5px; height: 5px; border-radius: 50%; background: #4a5b59; animation: dots 1.2s infinite; }
+.thought i:nth-of-type(2) { animation-delay: 0.2s; } .thought i:nth-of-type(3) { animation-delay: 0.4s; }
+@keyframes pace { 0%, 100% { transform: translateX(-24%) rotate(-4deg); } 24% { transform: translateX(0) rotate(0); } 50% { transform: translateX(24%) rotate(4deg); } 74% { transform: translateX(0) rotate(0); } }
+@keyframes wander { 0%, 100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-28%) rotate(-4deg); } 50% { transform: translateX(-28%) rotate(0); } 80% { transform: translateX(18%) rotate(4deg); } }
+@keyframes step { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-3.5%) scale(0.99, 1.02); } 60% { transform: translateY(0) scale(1.02, 0.98); } }
+@keyframes dots { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+.nib { position: relative; aspect-ratio: 1; transform-origin: 50% 90%; animation: breathe 3.6s ease-in-out infinite; }
 .nib img { width: 100%; height: 100%; display: block; mix-blend-mode: multiply; pointer-events: none; }
 .nib svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .nib-listening { transform: rotate(-2deg) scale(1.02); transition: transform 300ms; }
@@ -54,4 +66,4 @@ a { color: var(--teal-dark); }
 @keyframes shake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } 80% { transform: rotate(-2deg); } }
 @keyframes hop { 0%, 100% { transform: translateY(0) scale(1, 1); } 30% { transform: translateY(-34px) scale(0.97, 1.04); } 60% { transform: translateY(0) scale(1.04, 0.95); } }
 @keyframes pulse { 50% { opacity: 0.35; } }
-@media (prefers-reduced-motion: reduce) { .nib, .nib * { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .nib, .nib *, .nib-mover { animation: none !important; } }

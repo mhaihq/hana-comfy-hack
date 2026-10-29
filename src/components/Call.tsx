@@ -29,6 +29,8 @@ export function Call({ onEnd }: { onEnd: () => void }) {
   const [face, setFace] = useState<{ viseme: Viseme; open: number; blink: number }>({ viseme: "X", open: 0, blink: 0 });
   const [reaction, setReaction] = useState<Reaction>(null);
   const [listening, setListening] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [wander, setWander] = useState(false);
   const [caption, setCaption] = useState<Line | null>(null);
   const [notes, setNotes] = useState<string[]>([]);
   const [links, setLinks] = useState<(typeof LINKS)[keyof typeof LINKS] | null>(null);
@@ -48,6 +50,19 @@ export function Call({ onEnd }: { onEnd: () => void }) {
     let last = { viseme: "X" as Viseme, open: 0, blink: 0 };
     let lastPaint = 0;
     let wasListening = false;
+    // thinking: a lookup is running, or the caller finished and Higgsy hasn't started answering yet
+    const pending = new Set<string>();
+    let awaiting = false;
+    let isThinking = false;
+    const syncThinking = () => {
+      const next = pending.size > 0 || awaiting;
+      if (next !== isThinking) {
+        isThinking = next;
+        setThinking(next);
+      }
+    };
+    let nextWander = performance.now() + 9000 + Math.random() * 5000;
+    let wanderUntil = 0;
 
     const react = (name: string) => {
       if (!(REACTIONS as readonly string[]).includes(name)) return;
@@ -107,10 +122,33 @@ export function Call({ onEnd }: { onEnd: () => void }) {
           },
           onModeChange: ({ mode: m }) => {
             mode = m;
+            if (m === "speaking") {
+              awaiting = false;
+              syncThinking();
+            }
+          },
+          onAgentToolRequest: (e) => {
+            const t = e as unknown as { tool_name?: string; tool_call_id?: string };
+            if (t.tool_name === "lookup") {
+              pending.add(t.tool_call_id ?? "lookup");
+              syncThinking();
+            }
+          },
+          onAgentToolResponse: (e) => {
+            const t = e as unknown as { tool_name?: string; tool_call_id?: string };
+            if (t.tool_name === "lookup") {
+              pending.delete(t.tool_call_id ?? "lookup");
+              if (t.tool_call_id === undefined) pending.clear();
+              syncThinking();
+            }
           },
           onMessage: ({ role, message }) => {
             const text = role === "agent" ? stripAudioTags(message).trim() : message;
             if (text) setCaption({ role, text });
+            if (role === "user") {
+              awaiting = true;
+              syncThinking();
+            }
           },
           onDisconnect: () => !cancelled && setPhase("ended"),
           onError: (m) => setError(typeof m === "string" ? m : "The call dropped"),
@@ -150,6 +188,18 @@ export function Call({ onEnd }: { onEnd: () => void }) {
           nextBlink = now + 2500 + Math.random() * 2500;
         }
       }
+      // now and then, when nothing is going on, Higgsy takes a little walk
+      if (now > nextWander) {
+        nextWander = now + 9000 + Math.random() * 6000;
+        if (!isThinking && mode !== "speaking" && !wasListening) {
+          wanderUntil = now + 2800;
+          setWander(true);
+        }
+      }
+      if (wanderUntil && now > wanderUntil) {
+        wanderUntil = 0;
+        setWander(false);
+      }
       const isListening = !!c && mode === "listening" && c.getInputVolume() > 0.06;
       if (isListening !== wasListening) {
         wasListening = isListening;
@@ -187,7 +237,7 @@ export function Call({ onEnd }: { onEnd: () => void }) {
   return (
     <div className="call">
       <div className="stage">
-        <Higgsy viseme={face.viseme} open={face.open} blink={face.blink} reaction={reaction} listening={listening} />
+        <Higgsy viseme={face.viseme} open={face.open} blink={face.blink} reaction={reaction} listening={listening} thinking={thinking} wander={wander} />
         <div className="status">{phase === "connecting" ? "Calling Higgsy…" : phase === "live" ? (muted ? "You're muted" : "Live") : "Call ended"}</div>
         {caption && <p className={`caption ${caption.role}`}>{caption.text}</p>}
         {error && <p className="error">{error}</p>}

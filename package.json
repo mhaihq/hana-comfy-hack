@@ -6,8 +6,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/build-index.mjs",
     "build": "next build",
     "start": "next start",
+    "index": "node scripts/build-index.mjs",
     "agent:deploy": "node --env-file=.env.local scripts/deploy-agent.mjs",
     "agent:test": "node --env-file=.env.local scripts/trap-tests.mjs"
   },
