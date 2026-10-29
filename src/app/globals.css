@@ -22,6 +22,11 @@ a { color: var(--teal-dark); }
 .call { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr); grid-template-rows: 1fr auto; }
 @media (max-width: 760px) { .call { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; } }
 .stage { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: clamp(48px, 12vh, 140px) 16px 16px; min-height: 52vh; }
+@media (min-width: 761px) {
+  .call { height: 100dvh; min-height: 0; grid-template-rows: minmax(0, 1fr) auto; }
+  .stage { min-height: 0; overflow: hidden; padding: clamp(40px, 8vh, 110px) 16px 12px; }
+}
+.caption { max-height: 26vh; overflow-y: auto; }
 .status { position: absolute; top: 14px; left: 16px; font-size: 14px; font-weight: 700; background: var(--card); border: 1px solid var(--line); padding: 5px 12px; border-radius: 999px; }
 .caption { max-width: 520px; margin: 8px 0 0; padding: 10px 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); font-size: 18px; line-height: 1.4; text-align: center; }
 .caption.user { opacity: 0.6; font-size: 15px; }
@@ -42,8 +47,9 @@ a { color: var(--teal-dark); }
 .controls button:disabled { opacity: 0.5; cursor: default; }
 
 /* Higgsy */
-/* scales with a big window instead of stopping at 440px: up to 560px, never more than 64% of the height */
-.nib-mover { position: relative; display: grid; place-items: center; width: min(560px, 80vw, 64vh); }
+/* scales with the window instead of stopping at 440px: up to 560px, never more than 46% of the height, so a long
+   answer and the call controls still fit on a laptop screen */
+.nib-mover { position: relative; display: grid; place-items: center; width: min(560px, 80vw, 46vh); }
 .nib-mover .nib { width: 100%; position: relative; z-index: 1; }
 /* a soft ground shadow: the cutout has none of its own, and it stays put while Higgsy hops */
 .stroller::after { content: ""; position: absolute; left: 50%; bottom: 4.5%; width: 52%; height: 5.5%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(48, 70, 66, 0.30), rgba(48, 70, 66, 0)); z-index: 0; }

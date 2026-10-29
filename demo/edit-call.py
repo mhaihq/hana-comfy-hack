@@ -25,8 +25,8 @@ for i, k in enumerate(["q1", "q2", "q3", "q4"], start=1):
 parts.append("".join(labels) + f"amix=inputs=5:normalize=0:duration=longest[m]")
 subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(parts), "-map", "[m]", "-t", "130", "-ar", "48000", f"{R}/call_full.wav"], check=True)
 
-# 2. the cuts (video seconds): click, Q1, Q2, Q3 (waiting gap trimmed), Q4 with the image
-cuts = [(5.5, 8.15), (16.1, 32.7), (42.8, 62.1), (77.1, 80.3), (82.0, 88.5), (103.5, 119.4)]
+# 2. the cuts (video seconds): click and greeting, Q1 (silent gap trimmed), Q2, Q3 (waiting gap trimmed), Q4 with the image
+cuts = [(5.8, 8.05), (15.7, 18.8), (20.3, 33.25), (42.4, 62.6), (72.6, 75.4), (77.4, 82.95), (98.4, 112.9)]
 v, a, off, offs = [], [], 0.0, []
 for i, (s, e) in enumerate(cuts):
     d = e - s; offs.append(off)
@@ -46,7 +46,7 @@ texts = {"q1": "What does the Plus plan cost?", "q2": "How do I cancel my subscr
 dt = []
 for k, t in texts.items():
     s = out_time(vt(q[k]["epoch"])); e = s + q[k]["dur"] + 0.6
-    dt.append(f"drawtext=fontfile={FONT}:text='{t}':fontsize=38:fontcolor=white:box=1:boxcolor=0x2fb5a0@0.96:boxborderw=20:x=(576-text_w/2):y=120:enable='between(t,{s:.2f},{e:.2f})'")
+    dt.append(f"drawtext=fontfile={FONT}:text='{t}':fontsize=38:fontcolor=white:box=1:boxcolor=0x2fb5a0@0.96:boxborderw=20:x=(576-text_w/2):y=70:enable='between(t,{s:.2f},{e:.2f})'")
 dt.append(f"drawtext=fontfile={FONT}:text='Live call · the caller’s voice is synthesized':fontsize=27:fontcolor=0x4a5b57:x=40:y=1034:enable='between(t,0.3,5.5)'")
 vf = f"[cv]{','.join(dt)},fade=t=in:st=0:d=0.35,fade=t=out:st={total-0.4:.2f}:d=0.4[fv];[ca]afade=t=in:st=0:d=0.3,afade=t=out:st={total-0.4:.2f}:d=0.4,aformat=channel_layouts=stereo[fa]"
 fc = ";".join(v + a + [cat, vf])

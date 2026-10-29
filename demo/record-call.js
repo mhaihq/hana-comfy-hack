@@ -77,9 +77,18 @@ const init = () => {
   const ev = (name, extra = {}) => { log.events.push({ t: Date.now(), ev: name, ...extra }); console.log(new Date().toISOString().slice(11, 23), name, JSON.stringify(extra)); };
   const browser = await chromium.launch({ args: ["--autoplay-policy=no-user-gesture-required", "--use-fake-ui-for-media-stream"] });
   // a real 1920x1080 window, recorded at its native size (Playwright pads a smaller page onto a gray canvas)
+  // the page is laid out as a 1280x720 window (the overrides below stand in for its vh units) and scaled 1.5x, so text and Higgsy are a good size
+  // in the video and stay crisp (the browser re-rasterises a scaled body at the final size)
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, recordVideo: { dir: `${OUT}/video`, size: { width: 1920, height: 1080 } }, permissions: ["microphone"] });
   const page = await context.newPage();
   await page.addInitScript(init);
+  await page.addInitScript(() => {
+    document.addEventListener("DOMContentLoaded", () => {
+      const st = document.createElement("style");
+      st.textContent = "html,body{width:1280px;height:720px;overflow:hidden} body{transform:scale(1.5);transform-origin:0 0} .call{height:720px!important} .nib-mover{width:min(331px,80vw)!important} .stage{padding-top:58px!important}";
+      document.head.appendChild(st);
+    });
+  });
   page.on("console", (m) => { const t = m.text(); if (/error|warn|fail|mic|audio/i.test(t)) ev("console", { t: t.slice(0, 160) }); });
   page.on("pageerror", (e) => ev("pageerror", { msg: String(e).slice(0, 200) }));
 
