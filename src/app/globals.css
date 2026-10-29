@@ -37,7 +37,7 @@ a { color: var(--teal-dark); }
 .panel h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
 .panel ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .notes li { background: #fff2b8; border-radius: 10px; padding: 6px 10px; font-weight: 600; }
-.panel figure { margin: 0; } .panel figure img { width: 100%; border-radius: 12px; display: block; } .panel figcaption { font-size: 13px; opacity: 0.7; margin-top: 6px; }
+.panel figure { margin: 0; } .panel figure img { max-width: 100%; max-height: 48vh; width: auto; margin: 0 auto; object-fit: contain; border-radius: 12px; display: block; } /* capped so the official links below it stay on screen */ .panel figcaption { font-size: 13px; opacity: 0.7; margin-top: 6px; }
 .demo-loading { padding: 40px 8px; text-align: center; opacity: 0.7; animation: pulse 1.2s ease-in-out infinite; }
 .demo-error { color: #b3261e; font-weight: 600; }
 .hint { margin: 0; opacity: 0.65; line-height: 1.45; }

@@ -25,8 +25,8 @@ for i, k in enumerate(["q1", "q2", "q3", "q4"], start=1):
 parts.append("".join(labels) + f"amix=inputs=5:normalize=0:duration=longest[m]")
 subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(parts), "-map", "[m]", "-t", "130", "-ar", "48000", f"{R}/call_full.wav"], check=True)
 
-# 2. the cuts (video seconds): click and greeting, Q1 (silent gap trimmed), Q2, Q3 (waiting gap trimmed), Q4 with the image
-cuts = [(5.8, 8.05), (15.7, 18.8), (20.3, 33.25), (42.4, 62.6), (72.6, 75.4), (77.4, 82.95), (98.4, 112.9)]
+# 2. the cuts (video seconds): click and greeting, Q1 (silent gap trimmed), Q2, Q3, Q4 with the image
+cuts = [(5.9, 8.5), (16.1, 19.2), (20.9, 33.65), (41.8, 60.8), (74.1, 83.3), (98.8, 114.0)]
 v, a, off, offs = [], [], 0.0, []
 for i, (s, e) in enumerate(cuts):
     d = e - s; offs.append(off)
@@ -48,7 +48,7 @@ for k, t in texts.items():
     s = out_time(vt(q[k]["epoch"])); e = s + q[k]["dur"] + 0.6
     dt.append(f"drawtext=fontfile={FONT}:text='{t}':fontsize=38:fontcolor=white:box=1:boxcolor=0x2fb5a0@0.96:boxborderw=20:x=(576-text_w/2):y=70:enable='between(t,{s:.2f},{e:.2f})'")
 dt.append(f"drawtext=fontfile={FONT}:text='Live call · the caller’s voice is synthesized':fontsize=27:fontcolor=0x4a5b57:x=40:y=1034:enable='between(t,0.3,5.5)'")
-vf = f"[cv]{','.join(dt)},fade=t=in:st=0:d=0.35,fade=t=out:st={total-0.4:.2f}:d=0.4[fv];[ca]afade=t=in:st=0:d=0.3,afade=t=out:st={total-0.4:.2f}:d=0.4,aformat=channel_layouts=stereo[fa]"
+vf = f"[cv]{','.join(dt)},fade=t=in:color=0xfaf3df:st=0:d=0.35,fade=t=out:color=0xfaf3df:st={total-0.4:.2f}:d=0.4[fv];[ca]afade=t=in:st=0:d=0.3,afade=t=out:st={total-0.4:.2f}:d=0.4,aformat=channel_layouts=stereo[fa]"
 fc = ";".join(v + a + [cat, vf])
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", video, "-i", f"{R}/call_full.wav", "-filter_complex", fc, "-map", "[fv]", "-map", "[fa]", "-c:v", "libx264", "-crf", "18", "-preset", "slow", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", f"{F}/05-live-call.mp4"], check=True)
 print(f"live call segment: {total:.1f} s")

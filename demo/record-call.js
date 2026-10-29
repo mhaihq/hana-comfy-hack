@@ -85,7 +85,7 @@ const init = () => {
   await page.addInitScript(() => {
     document.addEventListener("DOMContentLoaded", () => {
       const st = document.createElement("style");
-      st.textContent = "html,body{width:1280px;height:720px;overflow:hidden} body{transform:scale(1.5);transform-origin:0 0} .call{height:720px!important} .nib-mover{width:min(331px,80vw)!important} .stage{padding-top:58px!important}";
+      st.textContent = "html,body{width:1280px;height:720px;overflow:hidden} body{transform:scale(1.5);transform-origin:0 0} .call{height:720px!important} .nib-mover{width:min(331px,80vw)!important} .stage{padding-top:58px!important} .panel figure img{max-height:345px!important}";
       document.head.appendChild(st);
     });
   });
@@ -116,13 +116,19 @@ const init = () => {
     ev("live"); ev("probe", await page.evaluate(() => ({ gum: window.__gum, mic: window.__micState() })));
     const greet = await waitTurn(30000); ev("greeting-done", greet); await caption("greeting");
 
+    const NOT_HEARD = /still there|you might be away|didn'?t (quite )?catch|couldn'?t hear|are you there/i;
     for (const q of QUESTIONS) {
-      await page.waitForTimeout(700);
-      const b64 = fs.readFileSync(`demo/out/caller/${q}.wav`).toString("base64");
-      const said = await page.evaluate((b) => window.__say(b), b64);
-      ev("question", { q, dur: said.dur, epoch: said.epoch, mic: await page.evaluate(() => window.__micState()) });
-      await page.waitForTimeout(Math.round(said.dur * 1000) + 300);
-      const t = await waitTurn(); ev("answer-done", { q, ...t }); await caption(q);
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        await page.waitForTimeout(700);
+        const b64 = fs.readFileSync(`demo/out/caller/${q}.wav`).toString("base64");
+        const said = await page.evaluate((b) => window.__say(b), b64);
+        ev("question", { q, attempt, dur: said.dur, epoch: said.epoch, mic: await page.evaluate(() => window.__micState()) });
+        await page.waitForTimeout(Math.round(said.dur * 1000) + 300);
+        const t = await waitTurn(q === "q4" ? 40000 : 80000); ev("answer-done", { q, attempt, ...t }); await caption(q);
+        const heard = !NOT_HEARD.test(log.captions[log.captions.length - 1].text) && (q !== "q4" || (await page.$(".panel figure img")));
+        if (heard) break;
+        ev("retry", { q, why: "the agent did not hear it, or no image appeared" });
+      }
       if (q === "q4") { await page.waitForSelector(".panel figure img", { timeout: 60000 }).catch(() => ev("no-image")); ev("image-visible"); await page.waitForTimeout(5000); }
     }
     log.recStart = await page.evaluate(() => window.__recStart());
