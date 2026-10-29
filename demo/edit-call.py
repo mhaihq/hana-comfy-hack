@@ -11,7 +11,7 @@ log = json.load(open(f"{R}/log.json")); seg_info = json.load(open(f"{R}/analysis
 video = glob.glob(f"{R}/video/*.webm")[0]
 TF = seg_info["TF"]                          # video time of the first red-flash frame (measured by analyze-call.py)
 vt = lambda epoch: TF + (epoch - log["flashEpoch"]) / 1000.0
-at0 = seg_info["at0"] - 0.10                 # where agent.wav starts, in video time (0.1 s earlier: the mouth animation leads her voice slightly)
+at0 = seg_info["at0"] - 0.05                 # where agent.wav starts, in video time (0.05 s earlier: the mouth animation leads her voice very slightly)
 q = {e["q"]: e for e in log["events"] if e["ev"] == "question"}
 W = lambda x: os.path.abspath(x)
 
@@ -25,8 +25,9 @@ for i, k in enumerate(["q1", "q2", "q3", "q4"], start=1):
 parts.append("".join(labels) + f"amix=inputs=5:normalize=0:duration=longest[m]")
 subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(parts), "-map", "[m]", "-t", "130", "-ar", "48000", f"{R}/call_full.wav"], check=True)
 
-# 2. the cuts (video seconds): click and greeting, Q1 (silent gap trimmed), Q2, Q3, Q4 with the image
-cuts = [(5.9, 8.5), (16.1, 19.2), (20.9, 33.65), (41.8, 60.8), (74.1, 83.3), (98.8, 114.0)]
+# 2. the cuts (video seconds): click and greeting, Q1 (silent gap trimmed), Q2 (jumps from "According to Higgsfield's
+#    help center," to "To cancel, you'll need to..."), Q3, Q4 with the image
+cuts = [(5.9, 8.65), (16.1, 19.3), (21.7, 34.8), (42.9, 51.35), (59.35, 69.6), (72.9, 81.2), (100.4, 116.9)]
 v, a, off, offs = [], [], 0.0, []
 for i, (s, e) in enumerate(cuts):
     d = e - s; offs.append(off)
@@ -42,7 +43,7 @@ cat = "".join(f"[v{i}][a{i}]" for i in range(len(cuts))) + f"concat=n={len(cuts)
 
 # 3. captions for the questions, and a one-line label that the caller's voice is synthesized
 FONT = "/usr/share/fonts/opentype/inter/Inter-SemiBold.otf"
-texts = {"q1": "What does the Plus plan cost?", "q2": "How do I cancel my subscription?", "q3": "How much is the Mega Ultra plan?", "q4": "Show me an example: a small red paper boat"}
+texts = {"q1": "What does the Plus plan cost?", "q2": "How do I cancel my subscription?", "q3": "How much is the Mega Ultra plan?", "q4": "Show me a small red paper boat"}
 dt = []
 for k, t in texts.items():
     s = out_time(vt(q[k]["epoch"])); e = s + q[k]["dur"] + 0.6

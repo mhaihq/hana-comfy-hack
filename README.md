@@ -64,4 +64,4 @@ Prices change. Update the files in `knowledge/` (keep the source URL and date at
 
 ## Credits and licence
 
-Code: MIT ([LICENSE](LICENSE)). The lip sync and call loop are adapted from [Unstuck](https://github.com/srirammanogarux/unstuck) (MIT). The character is original, generated for this project.
+Code: MIT ([LICENSE](LICENSE)). The lip sync and call loop are adapted from [Unstuck](https://github.com/srirammanogarux/unstuck) (MIT). The character is original, generated for this project. Demo narration and voices are ElevenLabs.
