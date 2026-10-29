@@ -1,0 +1,26 @@
+{
+  "name": "ask-nib",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nib: a voice-call guide to Higgsfield's models. Original character and demos made with ComfyUI.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "agent:deploy": "node --env-file=.env.local scripts/deploy-agent.mjs",
+    "agent:test": "node --env-file=.env.local scripts/trap-tests.mjs"
+  },
+  "dependencies": {
+    "@elevenlabs/client": "^1.30.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}
