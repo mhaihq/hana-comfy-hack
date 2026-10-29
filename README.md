@@ -46,7 +46,7 @@ Prices change. Update the files in `knowledge/` (keep the source URL and date at
 
 ## Known limits
 
-- The in-call demo's Comfy Cloud calls follow Comfy's documented v1 API (`/api/prompt`, `/api/job/{id}/status`, `/api/view`). The history lookup isn't documented, so it tries two routes; verify it with your key.
+- The in-call demo follows Comfy's documented v1 Cloud API (`/api/prompt`, `/api/job/{id}/status`, `/api/view`) and was tested end to end against Comfy Cloud on 2026-10-29 (768px image returned). The history lookup isn't documented, so the code tries two routes; v1 is marked deprecated by Comfy, so re-check if it stops working.
 - ElevenLabs' free tier has a small monthly character allowance; long calls will use it up.
 - The model catalog is a snapshot from 2026-10-29. If a model isn't in it, Higgsy says so.
 
