@@ -190,9 +190,9 @@ export function Call({ onEnd }: { onEnd: () => void }) {
       }
       // now and then, when nothing is going on, Higgsy takes a little walk
       if (now > nextWander) {
-        nextWander = now + 9000 + Math.random() * 6000;
+        nextWander = now + 12000 + Math.random() * 8000;
         if (!isThinking && mode !== "speaking" && !wasListening) {
-          wanderUntil = now + 2800;
+          wanderUntil = now + 4800;
           setWander(true);
         }
       }
