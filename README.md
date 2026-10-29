@@ -43,7 +43,7 @@ npm run dev                     # http://localhost:3000
 npm run agent:test
 ```
 
-Asks Higgsy trap questions through ElevenLabs' conversation simulator: a plan that doesn't exist, an unlisted credit cost, an unannounced model, a discount code, and a figure that should be answered (and calculated) from the notes. All 7 pass at the time of writing.
+Asks Higgsy trap questions through ElevenLabs' conversation simulator: a plan that doesn't exist, an unlisted credit cost, an unannounced model, a discount code, a figure that should be answered (and calculated) from the notes, and general questions (cancelling, who owns your generations) that must come from Higgsfield's pages. All 11 pass at the time of writing (the general questions use the real lookup results as the tool output, since the simulator does not run webhooks).
 
 ## How "ask anything" stays honest
 

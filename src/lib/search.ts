@@ -52,7 +52,10 @@ export function search(query: string, k = 4): { built: string; results: Passage[
     }
     if (hit === 0) continue;
     s *= 0.6 + 0.4 * (hit / q.length); // reward passages that cover more of the question
-    if (ix.passages[i].core) s *= 1.3; // our dated notes outrank marketing copy
+    const p = ix.passages[i];
+    if (p.core) s *= 1.3; // our dated notes outrank marketing copy
+    if (p.url.includes("/help-center/")) s *= 1.25; // help-center articles are the authoritative how-tos and policies
+    if (/-vs-|compared|alternative/.test(p.url)) s *= 0.7; // comparison posts are about other companies too
     scored.push({ i, s });
   }
   scored.sort((a, b) => b.s - a.s);
