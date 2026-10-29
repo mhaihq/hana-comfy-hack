@@ -46,7 +46,7 @@ const body = {
       language: "en",
       prompt: { prompt, llm: process.env.NIB_LLM || "gemini-2.5-flash", temperature: 0.2, tools },
     },
-    tts: { voice_id: process.env.NIB_VOICE_ID || "TX3LPaxmHKxFdv7VOQHJ", model_id: "eleven_flash_v2" },
+    tts: { voice_id: process.env.NIB_VOICE_ID || "pPdl9cQBQq4p6mRkZy2Z" /* Emma - Adorable and Upbeat (ElevenLabs voice library; add it to your account first) */, model_id: "eleven_flash_v2" },
     conversation: { max_duration_seconds: 240 },
   },
   platform_settings: { auth: { enable_auth: true } },
