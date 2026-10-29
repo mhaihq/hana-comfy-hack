@@ -3,7 +3,8 @@
 // General questions need the lookup tool. The simulator doesn't run webhooks (it returns a stub), so for each
 // question we call the real /api/lookup on PUBLIC_URL and hand the simulator that result as the tool's output.
 // Usage: node --env-file=.env.local scripts/trap-tests.mjs
-const base = (process.env.PUBLIC_URL || "https://hana-comfy-hack.vercel.app").replace(/\/$/, "");
+const base = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
+if (!base) throw new Error("Set PUBLIC_URL to your deployed site (the general questions use its /api/lookup)");
 const key = process.env.ELEVENLABS_API_KEY;
 const id = process.env.ELEVENLABS_AGENT_ID;
 if (!key || !id) throw new Error("Set ELEVENLABS_API_KEY and ELEVENLABS_AGENT_ID");

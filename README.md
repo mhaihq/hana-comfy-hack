@@ -26,17 +26,30 @@ The mouth shapes, eyelids and brows are drawn over the generated image in SVG ([
 
 ## Run it
 
-You need Node 20+, an [ElevenLabs](https://elevenlabs.io) key, and (for demos) a Comfy key or a local ComfyUI.
+**Requirements:** Node 20+, an [ElevenLabs](https://elevenlabs.io) account for the voice agent, and a place to deploy the site (Vercel works). The deploy matters because the voice agent runs in ElevenLabs' cloud and its `lookup` tool calls your site's `/api/lookup`, so that URL has to be public. For the live demo images you also need a Comfy Cloud API key (a paid plan) or your own local ComfyUI.
+
+### Look at the character first (no keys)
 
 ```bash
 npm install
-cp .env.example .env.local      # add ELEVENLABS_API_KEY (and COMFY_API_KEY or COMFY_URL)
-npm run agent:deploy            # creates the voice agent in your ElevenLabs account, saves its id
-npm run index                   # builds the lookup index (about 2 minutes)
-npm run dev                     # http://localhost:3000
+npm run dev        # http://localhost:3000
 ```
 
-`/preview?viseme=D&open=80&react=smile` shows the character without a microphone.
+The home screen works. `/preview?viseme=D&open=80&react=smile` shows the character without a microphone, and `/preview?thinking=1` shows her thinking hop. The call itself needs the keys below.
+
+### Full setup
+
+1. **Keys.** `cp .env.example .env.local` and set `ELEVENLABS_API_KEY`, plus `COMFY_API_KEY` (Comfy Cloud) or `COMFY_URL` (your own ComfyUI, e.g. `http://127.0.0.1:8188`).
+2. **Deploy the site.** Import the repo into Vercel and set `ELEVENLABS_API_KEY` and `COMFY_API_KEY` (or `COMFY_URL`) as environment variables. The build runs `scripts/build-index.mjs`, which crawls Higgsfield's public pages for about 2 minutes. The call won't connect yet; it needs the agent id from the next step.
+3. **Create the voice agent.** Put your site's address in `.env.local` as `PUBLIC_URL=https://your-site.vercel.app`, then run `npm run agent:deploy`. It creates the agent in your ElevenLabs account and saves `ELEVENLABS_AGENT_ID` into `.env.local`.
+4. **Connect them.** Add `ELEVENLABS_AGENT_ID` to the Vercel environment variables and redeploy. Open the site, press **Call Higgsy**, and allow the microphone.
+5. **Check it** with `npm run agent:test` (needs `PUBLIC_URL`).
+
+Notes:
+- The default voice is "Emma" from ElevenLabs' voice library. Add it to your account first, or set `HIGGSY_VOICE_ID` to any voice you like.
+- ElevenLabs' free tier has a small monthly allowance and some restrictions on library voices; a paid plan removes them.
+- Without `PUBLIC_URL` the agent still works, but has no lookup tool and answers only from `knowledge/`.
+- To run the call locally, expose `npm run dev` through a tunnel (ngrok, cloudflared) and use that address as `PUBLIC_URL`. Run `npm run index` once first so `/api/lookup` has something to search.
 
 ## The "never invent" test
 
@@ -55,6 +68,10 @@ Set `PUBLIC_URL` to your deployed site before `npm run agent:deploy`, so the age
 ## Keeping the knowledge current
 
 Prices change. Update the files in `knowledge/` (keep the source URL and date at the top), then `npm run agent:deploy` again. The agent's prompt is the persona plus these files, nothing else.
+
+## Demo video
+
+`demo/` has the scripts that built the demo video: they record a real call against the deployed site, cut it, and join it with narrated clips. See [`demo/SCRIPT.md`](demo/SCRIPT.md).
 
 ## Known limits
 

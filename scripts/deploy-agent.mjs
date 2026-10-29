@@ -1,6 +1,6 @@
 // Creates (or updates, with ELEVENLABS_AGENT_ID set) the Higgsy voice agent in your ElevenLabs account.
 // The agent's prompt = persona/system-prompt.md + every file in knowledge/, so it can only say what's written there.
-// Usage: node --env-file=.env.local scripts/deploy-agent.mjs
+// Needs PUBLIC_URL (your deployed site) for the lookup tool. Usage: node --env-file=.env.local scripts/deploy-agent.mjs
 import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
 
 const key = process.env.ELEVENLABS_API_KEY;
@@ -13,7 +13,10 @@ const knowledge = readdirSync("knowledge")
   .sort()
   .map((f) => `\n## ${f}\n${readFileSync(`knowledge/${f}`, "utf8")}`)
   .join("\n");
-const prompt = readFileSync("persona/system-prompt.md", "utf8") + knowledge;
+const noLookup = process.env.PUBLIC_URL
+  ? ""
+  : "\n\n# Note on the lookup tool\nThe lookup tool is NOT available in this deployment. Ignore the instructions about it above: answer only from the KNOWLEDGE below, and say you don't know otherwise.\n";
+const prompt = readFileSync("persona/system-prompt.md", "utf8") + noLookup + knowledge;
 const first = readFileSync("persona/first-message.md", "utf8").trim();
 
 const clientTool = (name, description, properties, required) => ({
@@ -24,7 +27,7 @@ const clientTool = (name, description, properties, required) => ({
   parameters: { type: "object", properties, required },
 });
 // Server tool: Higgsy searches the index behind /api/lookup on your deployed site (see scripts/build-index.mjs).
-const publicUrl = (process.env.PUBLIC_URL || "https://hana-comfy-hack.vercel.app").replace(/\/$/, "");
+const publicUrl = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
 const lookupTool = {
   type: "webhook",
   name: "lookup",
@@ -39,8 +42,9 @@ const lookupTool = {
   },
   response_timeout_secs: 10,
 };
+if (!publicUrl) console.warn("PUBLIC_URL is not set, so the agent gets no lookup tool and answers only from knowledge/. Deploy the site first, then set PUBLIC_URL (see README).");
 const tools = [
-  lookupTool,
+  ...(publicUrl ? [lookupTool] : []),
   clientTool("react", "Trigger a facial reaction on the animated character. Call silently, about once per turn. Never mention it.", {
     name: { type: "string", enum: ["nod", "smile", "browRaise", "shake", "celebrate"], description: "The reaction" },
   }, ["name"]),
@@ -61,9 +65,9 @@ const body = {
     agent: {
       first_message: first,
       language: "en",
-      prompt: { prompt, llm: process.env.NIB_LLM || "gemini-2.5-flash", temperature: 0.2, tools },
+      prompt: { prompt, llm: process.env.HIGGSY_LLM || "gemini-2.5-flash", temperature: 0.2, tools },
     },
-    tts: { voice_id: process.env.NIB_VOICE_ID || "pPdl9cQBQq4p6mRkZy2Z" /* Emma - Adorable and Upbeat (ElevenLabs voice library; add it to your account first) */, model_id: "eleven_flash_v2" },
+    tts: { voice_id: process.env.HIGGSY_VOICE_ID || "pPdl9cQBQq4p6mRkZy2Z" /* Emma - Adorable and Upbeat (ElevenLabs voice library; add it to your account first) */, model_id: "eleven_flash_v2" },
     conversation: { max_duration_seconds: 240 },
   },
   platform_settings: { auth: { enable_auth: true } },
