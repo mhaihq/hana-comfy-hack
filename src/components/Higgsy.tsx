@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Viseme } from "@/lib/lipsync";
 
 export type Reaction = "nod" | "smile" | "browRaise" | "shake" | "celebrate" | null;
@@ -45,21 +45,10 @@ function Mouth({ viseme, open, smile }: { viseme: Viseme; open: number; smile: b
   }
 }
 
-// The thinking hop: a short loop of Higgsy bouncing lightly, made in ComfyUI (LTX-2.3 image to video, then
-// keyed to transparent, see workflows/higgsy-thinking-hop.md). It plays only while Higgsy is quietly thinking
-// or idle. While Higgsy speaks, or the caller speaks, it stays still, facing front, and just talks or listens.
-//
-// The clip is a crop of a 1024 px video frame in which the character stood at 0.66 scale with its top-left at
-// (273, 309). These numbers place that crop so the character lines up exactly with the front-view image
-// (character box (158, 90) in its own 1024 px square), so the crossfade between the two doesn't jump.
-const HOP = { x: 203, y: 10, w: 619 }; // crop box of the video frame (see scripts/key-sprite.py)
-const SCALE = 0.66;
-const pct = (v: number) => `${(v / 1024) * 100}%`;
-const hopStyle = {
-  left: pct(158 + (HOP.x - 273) / SCALE),
-  top: pct(90 + (HOP.y - 309) / SCALE),
-  width: pct(HOP.w / SCALE),
-};
+// The thinking hop is animated in CSS (see .nib-hop): a squash-and-stretch bounce of the front-view picture, with the
+// shadow shrinking as Higgsy lifts off. It plays only while Higgsy is quietly thinking or idle. While Higgsy speaks, or
+// the caller speaks, she stays still, facing front, and just talks or listens. If a hop is cut short she eases down to
+// rest from wherever she is, instead of snapping.
 
 export function Higgsy({ viseme, open, blink, reaction, listening, thinking = false, wander = false, still = false }: { viseme: Viseme; open: number; blink: number; reaction: Reaction; listening: boolean; thinking?: boolean; wander?: boolean; still?: boolean }) {
   const hop = (thinking || wander) && !still;
@@ -67,33 +56,40 @@ export function Higgsy({ viseme, open, blink, reaction, listening, thinking = fa
   const brows = reaction === "browRaise" || reaction === "celebrate" || thinkingFace;
   const mouthShape: Viseme = thinkingFace && viseme === "X" ? "A" : viseme; // a flat "hmm" mouth while thinking
 
-  // keep the hop sprite mounted for the length of the fade-out, and remount it each time so it starts from rest
-  const [hopShown, setHopShown] = useState(false);
-  const [hopId, setHopId] = useState(0);
+  const nibRef = useRef<HTMLDivElement>(null);
+  const [hopping, setHopping] = useState(false); // whether the hop animation class is applied
   useEffect(() => {
+    const el = nibRef.current;
     if (hop) {
-      setHopId((n) => n + 1);
-      setHopShown(true);
+      if (el) { el.style.transition = ""; el.style.transform = ""; }
+      setHopping(true);
       return;
     }
-    const t = setTimeout(() => setHopShown(false), 120);
-    return () => clearTimeout(t);
+    if (!el || !hopping) return;
+    // land from wherever the hop is: freeze the current pose, drop the animation, ease down to rest
+    const frozen = getComputedStyle(el).transform;
+    el.style.transform = frozen === "none" ? "" : frozen;
+    setHopping(false);
+    let t: ReturnType<typeof setTimeout>;
+    const id = requestAnimationFrame(() => {
+      el.style.transition = "transform 170ms ease-in";
+      el.style.transform = "none";
+      t = setTimeout(() => { el.style.transition = ""; el.style.transform = ""; }, 220);
+    });
+    return () => { cancelAnimationFrame(id); clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hop]);
 
   return (
     <div className="nib-mover">
-      <div className="stroller">
+      <div className={`stroller ${hopping ? "hopping" : ""}`}>
         {thinkingFace && (
           <div className="thought" aria-hidden>
             <span>hmm</span>
             <i /><i /><i />
           </div>
         )}
-        {hopShown && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={hopId} className={`hopper ${hop ? "on" : ""}`} style={hopStyle} src="/nib/think.webp" alt="" aria-hidden draggable={false} />
-        )}
-        <div className={`nib ${hop ? "nib-hidden" : thinkingFace ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
+        <div ref={nibRef} className={`nib ${hopping ? "nib-hop" : thinkingFace ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/nib/higgsy.png" alt="Higgsy, a round teal ink-drop character" draggable={false} />
           <svg viewBox="0 0 1024 1024" aria-hidden>

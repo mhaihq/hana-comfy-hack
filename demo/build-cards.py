@@ -82,12 +82,10 @@ def thumb(path, size, checker=False, crop=None):
     mk = Image.new("L", (size, size), 0); ImageDraw.Draw(mk).rounded_rectangle((0, 0, size, size), radius=28, fill=255)
     out = Image.new("RGBA", (size, size)); out.paste(t, (0, 0), mk); return out
 
-think = Image.open(f"{NIB}/think.webp"); think.seek(5); tf = think.convert("RGBA")
-tb = Image.new("RGBA", tf.size, CREAM + (255,)); tb.alpha_composite(tf); tb.save(f"{OUT}/_think_frame.png")
 rows = [
     ("Higgsy herself", "Z-Image-Turbo, open weights, on Comfy Cloud", thumb(f"{NIB}/base.png", 130)),
     ("A clean cutout", "BiRefNet background removal", thumb(f"{NIB}/higgsy.png", 130, checker=True)),
-    ("The greeting and the thinking hop", "LTX-2.3 image to video, keyed to transparent", thumb(f"{OUT}/_think_frame.png", 130)),
+    ("The greeting clip", "LTX-2.3 image to video", thumb(f"{NIB}/intro-poster.jpg", 130)),
     ("Live demos inside the call", "Comfy Cloud API, with the workflow linked under every image", thumb("/tmp/demo.png", 130) if os.path.exists("/tmp/demo.png") else thumb(f"{NIB}/base.png", 130)),
 ]
 for state in range(1, 5):

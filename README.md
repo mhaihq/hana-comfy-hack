@@ -15,13 +15,12 @@ Made for the Comfy "Open Source Higgsfield" build night. **Unofficial community 
 | --- | --- | --- |
 | Higgsy's art | [`workflows/nib-character.api.json`](workflows/nib-character.api.json) (Z-Image-Turbo) | Comfy Cloud |
 | Transparent cutout of Higgsy | Stock template `utility_birefnet_remove_background` (BiRefNet, open source), run on `public/nib/nib.png` | Comfy Cloud |
-| Thinking hop (while thinking and idle) | [`workflows/higgsy-thinking-hop.md`](workflows/higgsy-thinking-hop.md): LTX-2.3 image to video, keyed to a transparent loop | Comfy Cloud |
 | Intro clip on the home screen | [`workflows/intro-video.ltx2_3_i2v.md`](workflows/intro-video.ltx2_3_i2v.md) (LTX-2.3 image to video, stock template) | Comfy Cloud |
 | Live demo image during a call | [`workflows/demo-image.api.json`](workflows/demo-image.api.json) (same model, 768px) | Comfy Cloud, or your own ComfyUI via `COMFY_URL` |
 
 Models for a local ComfyUI: `z_image_turbo_bf16.safetensors` (diffusion models), `qwen_3_4b.safetensors` (text encoders), `ae.safetensors` (VAE). Or open the `image_z_image_turbo` template in ComfyUI.
 
-Each demo image in the call has a "Made with this ComfyUI workflow" link to its workflow file, and the home screen clip links to its recipe.
+While Higgsy is quietly thinking or idle she does a little squash-and-stretch hop. That one is plain CSS on the front-view picture (not generated), and she stays still while she or the caller is speaking. Each demo image in the call has a "Made with this ComfyUI workflow" link to its workflow file, and the home screen clip links to its recipe.
 
 The mouth shapes, eyelids and brows are drawn over the generated image in SVG ([`src/components/Higgsy.tsx`](src/components/Higgsy.tsx)). The mouth on the original render was painted out so the overlay can move it.
 

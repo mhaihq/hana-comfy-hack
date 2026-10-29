@@ -9,7 +9,7 @@ only the live call (about 60 seconds) and lay it between clips 2 and 3 in any ed
 | 0:00 - 0:10 | Higgsy waves, title card | `01-intro.mp4` | "This is Higgsy. You call her, and she answers questions about Higgsfield, out loud. I built her for the Comfy open-source Higgsfield challenge." |
 | 0:10 - 0:19 | "It never makes up a price" | `02-never-invents.mp4` | "Most assistants make up prices. Higgsy only repeats what Higgsfield's own pages say, with the date. If she can't find it, she says so." |
 | 0:19 - 1:19 | **Live call, screen recording** | you record it | Your questions and her answers, no extra voiceover. |
-| 1:19 - 1:41 | "Everything you see was made with ComfyUI" (four rows appear one by one) | `03-built-with-comfyui.mp4` | One line per row: Z-Image Turbo, the background-removal cutout, L T X two point three for the greeting and thinking hop, and the live Comfy U I demo with the workflow linked under every image. |
+| 1:19 - 1:41 | "Everything you see was made with ComfyUI" (four rows appear one by one) | `03-built-with-comfyui.mp4` | One line per row: Z-Image Turbo, the background-removal cutout, L T X two point three for the greeting clip, and the live Comfy U I demo with the workflow linked under every image. |
 | 1:41 - 1:53 | Links and hashtag | `04-end-card.mp4` | "Try it at the link, or run it yourself. The code is M I T, and every workflow is in the repo. Hashtag Open Source Higgsfield." |
 
 To change the wording or the voice: edit the lines in `demo/make-voiceover.py` (set `VOICE_ID` for another voice), run it,

@@ -21,7 +21,7 @@ a { color: var(--teal-dark); }
 
 .call { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr); grid-template-rows: 1fr auto; }
 @media (max-width: 760px) { .call { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; } }
-.stage { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; min-height: 52vh; }
+.stage { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: clamp(48px, 12vh, 140px) 16px 16px; min-height: 52vh; }
 .status { position: absolute; top: 14px; left: 16px; font-size: 14px; font-weight: 700; background: var(--card); border: 1px solid var(--line); padding: 5px 12px; border-radius: 999px; }
 .caption { max-width: 520px; margin: 8px 0 0; padding: 10px 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); font-size: 18px; line-height: 1.4; text-align: center; }
 .caption.user { opacity: 0.6; font-size: 15px; }
@@ -44,15 +44,27 @@ a { color: var(--teal-dark); }
 /* Higgsy */
 /* scales with a big window instead of stopping at 440px: up to 560px, never more than 64% of the height */
 .nib-mover { position: relative; display: grid; place-items: center; width: min(560px, 80vw, 64vh); }
-.nib-mover .nib { width: 100%; position: relative; z-index: 1; transition: opacity 60ms linear; }
+.nib-mover .nib { width: 100%; position: relative; z-index: 1; }
 /* a soft ground shadow: the cutout has none of its own, and it stays put while Higgsy hops */
 .stroller::after { content: ""; position: absolute; left: 50%; bottom: 4.5%; width: 52%; height: 5.5%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(48, 70, 66, 0.30), rgba(48, 70, 66, 0)); z-index: 0; }
 .stroller { position: relative; width: 100%; }
-/* Crossfades are asymmetric: a gentle fade into the hop, but an almost instant cut back to standing, so there is
-   no ghost double of Higgsy when the hop is interrupted mid-air (she starts to speak). */
-.hopper { position: absolute; height: auto; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 60ms linear; }
-.hopper.on { opacity: 1; transition: opacity 140ms ease-out; }
-.nib-hidden { opacity: 0; animation: none; transition: opacity 140ms ease-out; }
+/* The thinking hop: crouch, push off, apex with a little tilt, land with a squash. The shadow shrinks while she is up. */
+.nib.nib-hop { transform-origin: 50% 94%; animation: think-hop 1.2s cubic-bezier(0.3, 0.1, 0.3, 1) infinite; }
+@keyframes think-hop {
+  0% { transform: translateY(0) scale(1, 1) rotate(0); }
+  10% { transform: translateY(0) scale(1.07, 0.9) rotate(0); }
+  28% { transform: translateY(-9%) scale(0.94, 1.1) rotate(-2deg); }
+  48% { transform: translateY(-16%) scale(0.97, 1.03) rotate(-3deg); }
+  68% { transform: translateY(-6%) scale(0.95, 1.07) rotate(2deg); }
+  80% { transform: translateY(0) scale(1.09, 0.88) rotate(0); }
+  90% { transform: translateY(0) scale(0.98, 1.03) rotate(0); }
+  100% { transform: translateY(0) scale(1, 1) rotate(0); }
+}
+.stroller.hopping::after { animation: shadow-hop 1.2s cubic-bezier(0.3, 0.1, 0.3, 1) infinite; }
+@keyframes shadow-hop {
+  0%, 10%, 80%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+  48% { transform: translateX(-50%) scale(0.68); opacity: 0.5; }
+}
 .nib-thinking { animation: step 0.7s ease-in-out infinite; }
 .thought { position: absolute; top: -2%; right: 4%; z-index: 2; background: #fffaf0; border: 2px solid var(--line); border-radius: 22px; padding: 6px 14px; font-weight: 800; font-size: 17px; color: #4a5b59; display: flex; align-items: baseline; gap: 3px; box-shadow: 0 4px 0 var(--line); }
 .thought i { width: 5px; height: 5px; border-radius: 50%; background: #4a5b59; animation: dots 1.2s infinite; }
