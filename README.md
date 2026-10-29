@@ -14,6 +14,7 @@ Made for the Comfy "Open Source Higgsfield" build night. **Unofficial community 
 | What | Workflow | Where it runs |
 | --- | --- | --- |
 | Higgsy's art | [`workflows/nib-character.api.json`](workflows/nib-character.api.json) (Z-Image-Turbo) | Comfy Cloud |
+| Transparent cutout of Higgsy | Stock template `utility_birefnet_remove_background` (BiRefNet, open source), run on `public/nib/nib.png` | Comfy Cloud |
 | Intro clip on the home screen | [`workflows/intro-video.ltx2_3_i2v.md`](workflows/intro-video.ltx2_3_i2v.md) (LTX-2.3 image to video, stock template) | Comfy Cloud |
 | Live demo image during a call | [`workflows/demo-image.api.json`](workflows/demo-image.api.json) (same model, 768px) | Comfy Cloud, or your own ComfyUI via `COMFY_URL` |
 

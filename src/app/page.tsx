@@ -14,7 +14,7 @@ export default function Home() {
         {/* The greeting is an LTX-2.3 image-to-video clip made in ComfyUI; the still is for reduced motion */}
         <video className="home-nib home-video" src="/nib/intro.mp4" poster="/nib/intro-poster.jpg" autoPlay muted loop playsInline aria-label="Higgsy waves hello" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="home-nib home-still" src="/nib/nib.png" alt="Higgsy" draggable={false} />
+        <img className="home-nib home-still" src="/nib/higgsy.png" alt="Higgsy" draggable={false} />
         <p className="made-with">
           Made with ComfyUI: LTX-2.3 image to video · <a href={`${REPO}/blob/main/workflows/intro-video.ltx2_3_i2v.md`} target="_blank" rel="noreferrer">workflow</a>
         </p>

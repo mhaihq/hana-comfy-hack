@@ -57,7 +57,7 @@ export function Higgsy({ viseme, open, blink, reaction, listening, thinking = fa
       )}
     <div className={`nib ${thinking ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/nib/nib.png" alt="Higgsy, a round teal ink-drop character" draggable={false} />
+      <img src="/nib/higgsy.png" alt="Higgsy, a round teal ink-drop character" draggable={false} />
       <svg viewBox="0 0 1024 1024" aria-hidden>
         <defs>
           <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" /></filter>
