@@ -42,7 +42,8 @@ a { color: var(--teal-dark); }
 .controls button:disabled { opacity: 0.5; cursor: default; }
 
 /* Higgsy */
-.nib-mover { position: relative; display: grid; place-items: center; width: min(440px, 80vw); }
+/* scales with a big window instead of stopping at 440px: up to 560px, never more than 64% of the height */
+.nib-mover { position: relative; display: grid; place-items: center; width: min(560px, 80vw, 64vh); }
 .nib-mover .nib { width: 100%; position: relative; z-index: 1; transition: opacity 60ms linear; }
 /* a soft ground shadow: the cutout has none of its own, and it stays put while Higgsy hops */
 .stroller::after { content: ""; position: absolute; left: 50%; bottom: 4.5%; width: 52%; height: 5.5%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(48, 70, 66, 0.30), rgba(48, 70, 66, 0)); z-index: 0; }

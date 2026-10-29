@@ -76,7 +76,8 @@ const init = () => {
   const log = { url: URL, events: [], captions: [] };
   const ev = (name, extra = {}) => { log.events.push({ t: Date.now(), ev: name, ...extra }); console.log(new Date().toISOString().slice(11, 23), name, JSON.stringify(extra)); };
   const browser = await chromium.launch({ args: ["--autoplay-policy=no-user-gesture-required", "--use-fake-ui-for-media-stream"] });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, recordVideo: { dir: `${OUT}/video`, size: { width: 1280, height: 720 } }, permissions: ["microphone"] });
+  // a real 1920x1080 window, recorded at its native size (Playwright pads a smaller page onto a gray canvas)
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, recordVideo: { dir: `${OUT}/video`, size: { width: 1920, height: 1080 } }, permissions: ["microphone"] });
   const page = await context.newPage();
   await page.addInitScript(init);
   page.on("console", (m) => { const t = m.text(); if (/error|warn|fail|mic|audio/i.test(t)) ev("console", { t: t.slice(0, 160) }); });

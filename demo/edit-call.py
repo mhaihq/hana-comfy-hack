@@ -7,9 +7,9 @@
 import glob, json, subprocess, os
 
 O = "demo/out"; R = f"{O}/rec"; F = f"{O}/final"; os.makedirs(F, exist_ok=True)
-log = json.load(open(f"{R}/log.json")); seg_info = json.load(open(f"{R}/segments.json"))
+log = json.load(open(f"{R}/log.json")); seg_info = json.load(open(f"{R}/analysis.json"))
 video = glob.glob(f"{R}/video/*.webm")[0]
-TF = 2.88                                    # video time of the first red-flash frame (measured)
+TF = seg_info["TF"]                          # video time of the first red-flash frame (measured by analyze-call.py)
 vt = lambda epoch: TF + (epoch - log["flashEpoch"]) / 1000.0
 at0 = seg_info["at0"] - 0.10                 # where agent.wav starts, in video time (0.1 s earlier: the mouth animation leads her voice slightly)
 q = {e["q"]: e for e in log["events"] if e["ev"] == "question"}
