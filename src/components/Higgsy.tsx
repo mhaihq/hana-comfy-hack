@@ -45,49 +45,58 @@ function Mouth({ viseme, open, smile }: { viseme: Viseme; open: number; smile: b
   }
 }
 
-// Strolling: when Higgsy is thinking (or idling), it turns side-on, walks a few steps left, turns round
-// through a front-facing squash, walks right, and so on. The side view is a walk cycle made in ComfyUI
-// (public/nib/walk.webp, facing left; flipped for walking right). On finishing it walks home and faces front.
-type Pose = "front" | "turn" | "walkL" | "walkR";
+// Strolling: when Higgsy is thinking (or idling), it moves into side view, walks a few steps left, turns,
+// walks right, and so on. The side view is a walk cycle made in ComfyUI (public/nib/walk.webp, facing left;
+// mirrored for walking right). A turn squashes the side view narrow, flips it and squashes it back out, the
+// way a side-on character turns round. Going to and from the front view is a short crossfade.
+// When it finishes, Higgsy walks back to the middle and faces front again.
+type Stroll = { side: boolean; dir: "L" | "R"; squash: boolean; x: number; ms: number };
 const LEG = 26; // how far one leg of the walk goes, as % of Higgsy's width
 const MS_PER_PCT = 65; // walking speed
-const TURN_MS = 260;
+const SQUASH_MS = 130; // half of a turn
 
 function useStroll(active: boolean) {
-  const [s, setS] = useState<{ pose: Pose; x: number; ms: number }>({ pose: "front", x: 0, ms: 0 });
-  const xRef = useRef(0);
+  const [s, setS] = useState<Stroll>({ side: false, dir: "L", squash: false, x: 0, ms: 0 });
+  const ref = useRef<Stroll>(s);
   useEffect(() => {
     if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     let dead = false;
     const at = (ms: number, fn: () => void) => timers.push(setTimeout(() => !dead && fn(), ms));
-    const set = (pose: Pose, x = xRef.current, ms = 0) => {
-      xRef.current = x;
-      setS({ pose, x, ms });
+    const set = (patch: Partial<Stroll>) => {
+      ref.current = { ...ref.current, ...patch };
+      setS(ref.current);
     };
-    const turn = (next: () => void) => {
-      set("turn");
-      at(TURN_MS, next);
+    // squash, flip while narrow, squash back out
+    const turn = (to: "L" | "R", next: () => void) => {
+      set({ squash: true, ms: 0 });
+      at(SQUASH_MS, () => {
+        set({ dir: to });
+        at(30, () => {
+          set({ squash: false });
+          at(SQUASH_MS, next);
+        });
+      });
     };
     const walk = (to: number, next: () => void) => {
-      const ms = Math.max(200, Math.abs(to - xRef.current) * MS_PER_PCT);
-      set(to < xRef.current ? "walkL" : "walkR", to, ms);
+      const ms = Math.max(200, Math.abs(to - ref.current.x) * MS_PER_PCT);
+      set({ side: true, squash: false, dir: to < ref.current.x ? "L" : "R", x: to, ms });
       at(ms, next);
     };
     if (active) {
       let target = -LEG;
       const leg = () =>
-        walk(target, () =>
-          turn(() => {
-            target = target < 0 ? LEG : -LEG;
-            leg();
-          }),
-        );
-      turn(leg);
-    } else if (Math.abs(xRef.current) > 1) {
-      walk(0, () => turn(() => set("front", 0)));
-    } else {
-      set("front", 0);
+        walk(target, () => {
+          target = target < 0 ? LEG : -LEG;
+          turn(target < 0 ? "L" : "R", leg);
+        });
+      set({ side: true, dir: "L", squash: false, ms: 0 });
+      at(220, leg); // let the crossfade to side view finish first
+    } else if (ref.current.side) {
+      const away = Math.abs(ref.current.x) > 1;
+      const home = () => set({ side: false, squash: false, x: 0, ms: 0 });
+      if (away) walk(0, () => at(60, home));
+      else home();
     }
     return () => {
       dead = true;
@@ -101,7 +110,7 @@ export function Higgsy({ viseme, open, blink, reaction, listening, thinking = fa
   const brows = reaction === "browRaise" || reaction === "celebrate" || thinking;
   const mouthShape: Viseme = thinking && viseme === "X" ? "A" : viseme; // a flat "hmm" mouth while thinking
   const st = useStroll(thinking || wander);
-  const walking = st.pose === "walkL" || st.pose === "walkR";
+  const walking = st.side && !st.squash;
   return (
     <div className="nib-mover">
       <div className="stroller" style={{ transform: `translateX(${st.x}%)`, transitionDuration: `${st.ms}ms` }}>
@@ -111,9 +120,11 @@ export function Higgsy({ viseme, open, blink, reaction, listening, thinking = fa
             <i /><i /><i />
           </div>
         )}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={`walker ${walking ? "on" : ""} ${st.pose === "walkR" ? "flip" : ""}`} src="/nib/walk.webp" alt="" aria-hidden draggable={false} />
-        <div className={`nib ${walking ? "nib-hidden" : ""} ${st.pose === "turn" ? "nib-turning" : thinking && st.pose === "front" ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
+        <div className={`walker-box ${st.side ? "walking" : ""}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className={`walker ${st.side ? "on" : ""} ${st.dir === "R" ? "flip" : ""} ${st.squash ? "squash" : ""}`} src="/nib/walk.webp" alt="" aria-hidden draggable={false} />
+        </div>
+        <div className={`nib ${st.side ? "nib-hidden" : thinking ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/nib/higgsy.png" alt="Higgsy, a round teal ink-drop character" draggable={false} />
           <svg viewBox="0 0 1024 1024" aria-hidden>

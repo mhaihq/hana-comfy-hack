@@ -10,6 +10,6 @@ Used by the "thinking" and idle strolls: Higgsy turns side-on, walks a few steps
    > The cute round teal ink-drop creature walks calmly in place in perfect side view, facing left, taking slow thoughtful steps with its small feet alternating, a gentle rhythmic body bob and a slight sway of its small arm, like a person pacing while thinking. Static camera, the character stays centered in frame and does not leave it, plain flat solid magenta background, same character design throughout, smooth animated-film style, no audio.
 
    Node overrides as in `intro-video.ltx2_3_i2v.md` (`269.image`, `320:312` width, `320:299` height, `320:301` seconds, `320:319` prompt). Result: `public/nib/src/walk_raw.mp4`.
-3. **Transparent sprite.** `scripts/key-walk.py` keys out the magenta and writes `public/nib/walk.webp` (43 frames, 12 fps, with alpha).
+3. **Transparent sprite.** `scripts/key-walk.py` keys out the magenta, removes the purple light the backdrop bounced onto the body, sharpens lightly and writes `public/nib/walk.webp` (43 frames, 12 fps, native 510 x 689, with alpha). Resizing the video down made it noticeably softer, so the sprite keeps the video's own resolution.
 
-The page does the rest (`src/components/Higgsy.tsx`): the sprite faces left, is mirrored for walking right, and moves across the stage while it plays. A front-facing squash covers each turn.
+The page does the rest (`src/components/Higgsy.tsx`): the sprite faces left, is mirrored for walking right, and moves across the stage while it plays. A turn squashes the side view narrow, flips it, and squashes it back out; going to or from the front view is a short crossfade. A small waddle (bob and tilt) on each step helps the footwork read.

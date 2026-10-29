@@ -27,15 +27,25 @@ def key(path):
     r, g, b = col[..., 0], col[..., 1], col[..., 2]
     col[..., 0] = np.where(edge, np.minimum(r, np.maximum(g, b) + 10), r)
     col[..., 2] = np.where(edge, np.minimum(b, g + 55), b)
-    return Image.fromarray(np.dstack([col, a * 255]).astype(np.uint8), "RGBA")
+    # despill: the magenta backdrop bounces purple light onto the body's underside. On teal-ish pixels
+    # (green not far below red, a real colour not a grey, so the yellow face, peach cheeks and eye whites are
+    # left alone) pull red and blue back toward green.
+    r, g, b = col[..., 0], col[..., 1], col[..., 2]
+    spread = np.maximum(np.maximum(r, g), b) - np.minimum(np.minimum(r, g), b)
+    teal = (g >= r * 0.95) & (g >= b * 0.8) & (spread > 30) & (a > 0.3)
+    col[..., 0] = np.where(teal, np.minimum(r, g * 0.72), r)
+    col[..., 2] = np.where(teal, np.minimum(b, g * 1.0), b)
+    rgb = Image.fromarray(col.astype(np.uint8), "RGB").filter(ImageFilter.UnsharpMask(radius=1.6, percent=130, threshold=2))
+    out = Image.fromarray(np.dstack([np.asarray(rgb), a * 255]).astype(np.uint8), "RGBA")
+    return out
 
 frames = [key(f) for f in files]
 boxes = [f.getchannel("A").point(lambda v: 255 if v > 20 else 0).getbbox() for f in frames]
 x0, y0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
 x1, y1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
 box = (max(0, x0 - 8), max(0, y0 - 8), min(768, x1 + 8), min(768, y1 + 8))
-W = 420
-H = round((box[3] - box[1]) * W / (box[2] - box[0]))
-frames = [f.crop(box).resize((W, H), Image.LANCZOS) for f in frames]
-frames[0].save("public/nib/walk.webp", save_all=True, append_images=frames[1:], duration=83, loop=0, quality=78, method=4)
+# keep the video's own resolution: resampling it down only softened it further
+frames = [f.crop(box) for f in frames]
+W, H = frames[0].size
+frames[0].save("public/nib/walk.webp", save_all=True, append_images=frames[1:], duration=83, loop=0, quality=90, method=5)
 print(len(frames), "frames", W, "x", H)
