@@ -35,17 +35,23 @@ def key(path):
     teal = (g >= r * 0.95) & (g >= b * 0.8) & (spread > 30) & (a > 0.3)
     col[..., 0] = np.where(teal, np.minimum(r, g * 0.72), r)
     col[..., 2] = np.where(teal, np.minimum(b, g * 1.0), b)
-    rgb = Image.fromarray(col.astype(np.uint8), "RGB").filter(ImageFilter.UnsharpMask(radius=1.6, percent=130, threshold=2))
-    out = Image.fromarray(np.dstack([np.asarray(rgb), a * 255]).astype(np.uint8), "RGBA")
-    return out
+    return Image.fromarray(np.dstack([col, a * 255]).astype(np.uint8), "RGBA")
+
+
+def sharpen(im):
+    rgb = im.convert("RGB").filter(ImageFilter.UnsharpMask(radius=1.4, percent=120, threshold=2))
+    rgb.putalpha(im.getchannel("A"))
+    return rgb
 
 frames = [key(f) for f in files]
 boxes = [f.getchannel("A").point(lambda v: 255 if v > 20 else 0).getbbox() for f in frames]
 x0, y0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
 x1, y1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
-box = (max(0, x0 - 8), max(0, y0 - 8), min(768, x1 + 8), min(768, y1 + 8))
-# keep the video's own resolution: resampling it down only softened it further
-frames = [f.crop(box) for f in frames]
-W, H = frames[0].size
-frames[0].save("public/nib/walk.webp", save_all=True, append_images=frames[1:], duration=83, loop=0, quality=90, method=5)
+size = frames[0].size[0]
+box = (max(0, x0 - 8), max(0, y0 - 8), min(size, x1 + 8), min(frames[0].size[1], y1 + 8))
+# 560 px wide is plenty (it shows at about 280 css px, so 2x for retina); sharpen after resizing, not before
+W = 560
+H = round((box[3] - box[1]) * W / (box[2] - box[0]))
+frames = [sharpen(f.crop(box).resize((W, H), Image.LANCZOS)) for f in frames]
+frames[0].save("public/nib/walk.webp", save_all=True, append_images=frames[1:], duration=83, loop=0, quality=88, method=5)
 print(len(frames), "frames", W, "x", H)
