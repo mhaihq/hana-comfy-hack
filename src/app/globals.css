@@ -43,19 +43,13 @@ a { color: var(--teal-dark); }
 
 /* Higgsy */
 .nib-mover { position: relative; display: grid; place-items: center; width: min(440px, 80vw); }
-.nib-mover .nib { width: 100%; position: relative; z-index: 1; transition: opacity 200ms ease-out, transform 200ms ease-out; }
+.nib-mover .nib { width: 100%; position: relative; z-index: 1; transition: opacity 200ms ease-out; }
 /* a soft ground shadow: the cutout has none of its own, and it stays put while Higgsy hops */
 .stroller::after { content: ""; position: absolute; left: 50%; bottom: 4.5%; width: 52%; height: 5.5%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(48, 70, 66, 0.30), rgba(48, 70, 66, 0)); z-index: 0; }
-.stroller { position: relative; width: 100%; transition-property: transform; transition-timing-function: linear; }
-.walker-box { position: absolute; left: 50%; translate: -50% 0; bottom: 6.3%; height: 84.5%; z-index: 2; pointer-events: none; transform-origin: 50% 100%; }
-.walker-box.walking { animation: waddle 1.1s ease-in-out infinite; }
-.walker { height: 100%; width: auto; display: block; opacity: 0; transform: scaleX(0.62); transition: opacity 200ms ease-out, transform 200ms ease-out; }
-.walker.on { opacity: 1; transform: scaleX(1); }
-.walker.on.flip { transform: scaleX(-1); }
-.walker.on.squash { transform: scaleX(0.04); transition: transform 130ms ease-in; }
-.walker.on.flip.squash { transform: scaleX(-0.04); }
-.nib-hidden { opacity: 0; transform: scaleX(0.62); animation: none; transition: opacity 200ms ease-out, transform 200ms ease-out; }
-@keyframes waddle { 0%, 50%, 100% { transform: translateY(0) rotate(0); } 25% { transform: translateY(-2.2%) rotate(-2.2deg); } 75% { transform: translateY(-2.2%) rotate(2.2deg); } }
+.stroller { position: relative; width: 100%; }
+.hopper { position: absolute; height: auto; z-index: 2; pointer-events: none; opacity: 0; transition: opacity 200ms ease-out; }
+.hopper.on { opacity: 1; }
+.nib-hidden { opacity: 0; animation: none; transition: opacity 200ms ease-out; }
 .nib-thinking { animation: step 0.7s ease-in-out infinite; }
 .thought { position: absolute; top: -2%; right: 4%; z-index: 2; background: #fffaf0; border: 2px solid var(--line); border-radius: 22px; padding: 6px 14px; font-weight: 800; font-size: 17px; color: #4a5b59; display: flex; align-items: baseline; gap: 3px; box-shadow: 0 4px 0 var(--line); }
 .thought i { width: 5px; height: 5px; border-radius: 50%; background: #4a5b59; animation: dots 1.2s infinite; }

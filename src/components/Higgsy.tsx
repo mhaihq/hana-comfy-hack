@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Viseme } from "@/lib/lipsync";
 
 export type Reaction = "nod" | "smile" | "browRaise" | "shake" | "celebrate" | null;
@@ -45,86 +45,55 @@ function Mouth({ viseme, open, smile }: { viseme: Viseme; open: number; smile: b
   }
 }
 
-// Strolling: when Higgsy is thinking (or idling), it moves into side view, walks a few steps left, turns,
-// walks right, and so on. The side view is a walk cycle made in ComfyUI (public/nib/walk.webp, facing left;
-// mirrored for walking right). A turn squashes the side view narrow, flips it and squashes it back out, the
-// way a side-on character turns round. Going to and from the front view is a short crossfade.
-// When it finishes, Higgsy walks back to the middle and faces front again.
-type Stroll = { side: boolean; dir: "L" | "R"; squash: boolean; x: number; ms: number };
-const LEG = 26; // how far one leg of the walk goes, as % of Higgsy's width
-const MS_PER_PCT = 65; // walking speed
-const SQUASH_MS = 130; // half of a turn
+// The thinking hop: a short loop of Higgsy bouncing lightly, made in ComfyUI (LTX-2.3 image to video, then
+// keyed to transparent, see workflows/higgsy-thinking-hop.md). It plays only while Higgsy is quietly thinking
+// or idle. While Higgsy speaks, or the caller speaks, it stays still, facing front, and just talks or listens.
+//
+// The clip is a crop of a 1024 px video frame in which the character stood at 0.66 scale with its top-left at
+// (273, 309). These numbers place that crop so the character lines up exactly with the front-view image
+// (character box (158, 90) in its own 1024 px square), so the crossfade between the two doesn't jump.
+const HOP = { x: 203, y: 10, w: 619 }; // crop box of the video frame (see scripts/key-sprite.py)
+const SCALE = 0.66;
+const pct = (v: number) => `${(v / 1024) * 100}%`;
+const hopStyle = {
+  left: pct(158 + (HOP.x - 273) / SCALE),
+  top: pct(90 + (HOP.y - 309) / SCALE),
+  width: pct(HOP.w / SCALE),
+};
 
-function useStroll(active: boolean) {
-  const [s, setS] = useState<Stroll>({ side: false, dir: "L", squash: false, x: 0, ms: 0 });
-  const ref = useRef<Stroll>(s);
+export function Higgsy({ viseme, open, blink, reaction, listening, thinking = false, wander = false, still = false }: { viseme: Viseme; open: number; blink: number; reaction: Reaction; listening: boolean; thinking?: boolean; wander?: boolean; still?: boolean }) {
+  const hop = (thinking || wander) && !still;
+  const thinkingFace = thinking && !still;
+  const brows = reaction === "browRaise" || reaction === "celebrate" || thinkingFace;
+  const mouthShape: Viseme = thinkingFace && viseme === "X" ? "A" : viseme; // a flat "hmm" mouth while thinking
+
+  // keep the hop sprite mounted for the length of the fade-out, and remount it each time so it starts from rest
+  const [hopShown, setHopShown] = useState(false);
+  const [hopId, setHopId] = useState(0);
   useEffect(() => {
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    let dead = false;
-    const at = (ms: number, fn: () => void) => timers.push(setTimeout(() => !dead && fn(), ms));
-    const set = (patch: Partial<Stroll>) => {
-      ref.current = { ...ref.current, ...patch };
-      setS(ref.current);
-    };
-    // squash, flip while narrow, squash back out
-    const turn = (to: "L" | "R", next: () => void) => {
-      set({ squash: true, ms: 0 });
-      at(SQUASH_MS, () => {
-        set({ dir: to });
-        at(30, () => {
-          set({ squash: false });
-          at(SQUASH_MS, next);
-        });
-      });
-    };
-    const walk = (to: number, next: () => void) => {
-      const ms = Math.max(200, Math.abs(to - ref.current.x) * MS_PER_PCT);
-      set({ side: true, squash: false, dir: to < ref.current.x ? "L" : "R", x: to, ms });
-      at(ms, next);
-    };
-    if (active) {
-      let target = -LEG;
-      const leg = () =>
-        walk(target, () => {
-          target = target < 0 ? LEG : -LEG;
-          turn(target < 0 ? "L" : "R", leg);
-        });
-      set({ side: true, dir: "L", squash: false, ms: 0 });
-      at(220, leg); // let the crossfade to side view finish first
-    } else if (ref.current.side) {
-      const away = Math.abs(ref.current.x) > 1;
-      const home = () => set({ side: false, squash: false, x: 0, ms: 0 });
-      if (away) walk(0, () => at(60, home));
-      else home();
+    if (hop) {
+      setHopId((n) => n + 1);
+      setHopShown(true);
+      return;
     }
-    return () => {
-      dead = true;
-      timers.forEach(clearTimeout);
-    };
-  }, [active]);
-  return s;
-}
+    const t = setTimeout(() => setHopShown(false), 240);
+    return () => clearTimeout(t);
+  }, [hop]);
 
-export function Higgsy({ viseme, open, blink, reaction, listening, thinking = false, wander = false }: { viseme: Viseme; open: number; blink: number; reaction: Reaction; listening: boolean; thinking?: boolean; wander?: boolean }) {
-  const brows = reaction === "browRaise" || reaction === "celebrate" || thinking;
-  const mouthShape: Viseme = thinking && viseme === "X" ? "A" : viseme; // a flat "hmm" mouth while thinking
-  const st = useStroll(thinking || wander);
-  const walking = st.side && !st.squash;
   return (
     <div className="nib-mover">
-      <div className="stroller" style={{ transform: `translateX(${st.x}%)`, transitionDuration: `${st.ms}ms` }}>
-        {thinking && (
+      <div className="stroller">
+        {thinkingFace && (
           <div className="thought" aria-hidden>
             <span>hmm</span>
             <i /><i /><i />
           </div>
         )}
-        <div className={`walker-box ${st.side ? "walking" : ""}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className={`walker ${st.side ? "on" : ""} ${st.dir === "R" ? "flip" : ""} ${st.squash ? "squash" : ""}`} src="/nib/walk.webp" alt="" aria-hidden draggable={false} />
-        </div>
-        <div className={`nib ${st.side ? "nib-hidden" : thinking ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
+        {hopShown && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={hopId} className={`hopper ${hop ? "on" : ""}`} style={hopStyle} src="/nib/think.webp" alt="" aria-hidden draggable={false} />
+        )}
+        <div className={`nib ${hop ? "nib-hidden" : thinkingFace ? "nib-thinking" : reaction ? `nib-${reaction}` : ""} ${listening ? "nib-listening" : ""}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/nib/higgsy.png" alt="Higgsy, a round teal ink-drop character" draggable={false} />
           <svg viewBox="0 0 1024 1024" aria-hidden>
@@ -138,8 +107,8 @@ export function Higgsy({ viseme, open, blink, reaction, listening, thinking = fa
             {blink > 0.6 && [380, 660].map((cx) => <path key={cx} d={`M ${cx - 40} ${548} Q ${cx} ${568} ${cx + 40} ${548}`} stroke={INK} strokeWidth={6} fill="none" strokeLinecap="round" />)}
             {brows && (
               <g stroke="#3b5f58" strokeWidth={9} strokeLinecap="round" fill="none">
-                <path d={thinking ? "M 322 440 Q 380 404 438 430" : "M 322 452 Q 380 420 438 448"} />
-                <path d={thinking ? "M 602 462 Q 660 452 718 468" : "M 602 448 Q 660 420 718 452"} />
+                <path d={thinkingFace ? "M 322 440 Q 380 404 438 430" : "M 322 452 Q 380 420 438 448"} />
+                <path d={thinkingFace ? "M 602 462 Q 660 452 718 468" : "M 602 448 Q 660 420 718 452"} />
               </g>
             )}
             <g transform={`translate(${MOUTH_X} ${MOUTH_Y}) scale(1.55) translate(${-MOUTH_X} ${-MOUTH_Y})`}>

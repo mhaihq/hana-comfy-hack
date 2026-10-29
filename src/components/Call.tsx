@@ -29,6 +29,7 @@ export function Call({ onEnd }: { onEnd: () => void }) {
   const [face, setFace] = useState<{ viseme: Viseme; open: number; blink: number }>({ viseme: "X", open: 0, blink: 0 });
   const [reaction, setReaction] = useState<Reaction>(null);
   const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [wander, setWander] = useState(false);
   const [caption, setCaption] = useState<Line | null>(null);
@@ -122,6 +123,7 @@ export function Call({ onEnd }: { onEnd: () => void }) {
           },
           onModeChange: ({ mode: m }) => {
             mode = m;
+            setSpeaking(m === "speaking");
             if (m === "speaking") {
               awaiting = false;
               syncThinking();
@@ -192,7 +194,7 @@ export function Call({ onEnd }: { onEnd: () => void }) {
       if (now > nextWander) {
         nextWander = now + 12000 + Math.random() * 8000;
         if (!isThinking && mode !== "speaking" && !wasListening) {
-          wanderUntil = now + 4800;
+          wanderUntil = now + 3600;
           setWander(true);
         }
       }
@@ -237,7 +239,7 @@ export function Call({ onEnd }: { onEnd: () => void }) {
   return (
     <div className="call">
       <div className="stage">
-        <Higgsy viseme={face.viseme} open={face.open} blink={face.blink} reaction={reaction} listening={listening} thinking={thinking} wander={wander} />
+        <Higgsy viseme={face.viseme} open={face.open} blink={face.blink} reaction={reaction} listening={listening} thinking={thinking} wander={wander} still={speaking || listening} />
         <div className="status">{phase === "connecting" ? "Calling Higgsy…" : phase === "live" ? (muted ? "You're muted" : "Live") : "Call ended"}</div>
         {caption && <p className={`caption ${caption.role}`}>{caption.text}</p>}
         {error && <p className="error">{error}</p>}
