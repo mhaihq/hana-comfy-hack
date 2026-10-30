@@ -1,10 +1,7 @@
 MIT License
 
 Copyright (c) 2026 Priyanshu Sinha
-
-Portions (src/lib/lipsync.ts, src/lib/textVisemes.ts, and the structure of the call loop in
-src/components/Call.tsx) are derived from "Unstuck" by srirammanogarux
-(https://github.com/srirammanogarux/unstuck), MIT licensed.
+Copyright (c) 2026 Unstuck contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
